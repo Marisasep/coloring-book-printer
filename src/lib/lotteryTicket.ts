@@ -94,17 +94,15 @@ export async function prepareTicketData(
   const qrOpts = { margin: 1, color: { dark: "#000000", light: "#ffffff" } };
   const qrLeftSrc = await QRCode.toDataURL(viewUrl, { ...qrOpts, width: 120 });
 
-  const barcodeSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  JsBarcode(barcodeSvg, ticketNumber, {
+  const barcodeCanvas = document.createElement("canvas");
+  JsBarcode(barcodeCanvas, ticketNumber, {
     format: "CODE128",
-    width: 6,
+    width: 4,
     height: 120,
     displayValue: false,
-    margin: 0,
-    xmlDocument: document,
+    margin: 10,
   });
-  const svgStr = new XMLSerializer().serializeToString(barcodeSvg);
-  const barcodeSrc = `data:image/svg+xml;base64,${btoa(svgStr)}`;
+  const barcodeSrc = barcodeCanvas.toDataURL("image/png");
 
   const serial = `${ticketNumber.slice(0, 2)}-${ticketNumber}${Math.floor(Math.random() * 90 + 10)}`;
 

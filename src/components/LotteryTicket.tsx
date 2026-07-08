@@ -96,8 +96,8 @@ const LotteryTicket = forwardRef<HTMLDivElement, Props>(function LotteryTicket(
 
               <div className="ltt-left-bottom">
                 <div className="ltt-price-l">
-                  <span className="ltt-price-l-num">80</span>
-                  <span className="ltt-price-l-unit">บาท</span>
+                  <div className="ltt-price-l-num">80</div>
+                  <div className="ltt-price-l-unit">บาท</div>
                 </div>
                 <img className="ltt-qr-s" src={qrLeftSrc} alt="" />
               </div>
@@ -192,6 +192,7 @@ const LotteryTicket = forwardRef<HTMLDivElement, Props>(function LotteryTicket(
         .ltt-photo-frame {
           border: 2px solid #000;
           line-height: 0;
+          margin-top: 12px;
         }
         .ltt-photo {
           width: 320px;

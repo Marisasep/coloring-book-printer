@@ -12,9 +12,33 @@ const CARDS = [
     border: "#b8d8c8",
     icon: (
       <svg viewBox="0 0 80 80" className="card-icon">
-        <circle cx="40" cy="40" r="30" fill="none" stroke="#fff" strokeWidth="1.5" opacity="0.7" />
-        <circle cx="40" cy="40" r="22" fill="none" stroke="#fff" strokeWidth="1" opacity="0.5" />
-        <circle cx="40" cy="40" r="14" fill="none" stroke="#fff" strokeWidth="1" opacity="0.4" />
+        <circle
+          cx="40"
+          cy="40"
+          r="30"
+          fill="none"
+          stroke="#fff"
+          strokeWidth="1.5"
+          opacity="0.7"
+        />
+        <circle
+          cx="40"
+          cy="40"
+          r="22"
+          fill="none"
+          stroke="#fff"
+          strokeWidth="1"
+          opacity="0.5"
+        />
+        <circle
+          cx="40"
+          cy="40"
+          r="14"
+          fill="none"
+          stroke="#fff"
+          strokeWidth="1"
+          opacity="0.4"
+        />
         <circle cx="40" cy="40" r="6" fill="#fff" opacity="0.6" />
         {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => (
           <line
@@ -48,7 +72,16 @@ const CARDS = [
           strokeWidth="1.5"
           opacity="0.6"
         />
-        <ellipse cx="40" cy="35" rx="18" ry="14" fill="none" stroke="#fff" strokeWidth="1.5" opacity="0.7" />
+        <ellipse
+          cx="40"
+          cy="35"
+          rx="18"
+          ry="14"
+          fill="none"
+          stroke="#fff"
+          strokeWidth="1.5"
+          opacity="0.7"
+        />
         <ellipse cx="40" cy="35" rx="12" ry="9" fill="#fff" opacity="0.3" />
         <circle cx="40" cy="52" r="3" fill="#fff" opacity="0.5" />
       </svg>
@@ -56,20 +89,60 @@ const CARDS = [
   },
   {
     mode: "lottery",
-    title: "จับฉันที",
-    subtitle: "Catch Me If You Can",
-    desc: "ตอบสนุกกับเกม",
+    title: "วันนี้รวย",
+    subtitle: "Photo Lottery",
+    desc: "ถ่ายรูปรับโชค",
     bg: "linear-gradient(135deg, #f0c4c8 0%, #e8aeb4 100%)",
     border: "#e8c8cc",
     icon: (
       <svg viewBox="0 0 80 80" className="card-icon">
-        <circle cx="28" cy="32" r="12" fill="none" stroke="#fff" strokeWidth="1.5" opacity="0.6" />
-        <circle cx="28" cy="32" r="6" fill="none" stroke="#fff" strokeWidth="1" opacity="0.4" />
+        <circle
+          cx="28"
+          cy="32"
+          r="12"
+          fill="none"
+          stroke="#fff"
+          strokeWidth="1.5"
+          opacity="0.6"
+        />
+        <circle
+          cx="28"
+          cy="32"
+          r="6"
+          fill="none"
+          stroke="#fff"
+          strokeWidth="1"
+          opacity="0.4"
+        />
         <circle cx="28" cy="32" r="2" fill="#fff" opacity="0.5" />
-        <circle cx="52" cy="32" r="12" fill="none" stroke="#fff" strokeWidth="1.5" opacity="0.6" />
-        <circle cx="52" cy="32" r="6" fill="none" stroke="#fff" strokeWidth="1" opacity="0.4" />
+        <circle
+          cx="52"
+          cy="32"
+          r="12"
+          fill="none"
+          stroke="#fff"
+          strokeWidth="1.5"
+          opacity="0.6"
+        />
+        <circle
+          cx="52"
+          cy="32"
+          r="6"
+          fill="none"
+          stroke="#fff"
+          strokeWidth="1"
+          opacity="0.4"
+        />
         <circle cx="52" cy="32" r="2" fill="#fff" opacity="0.5" />
-        <circle cx="40" cy="54" r="10" fill="none" stroke="#fff" strokeWidth="1.5" opacity="0.5" />
+        <circle
+          cx="40"
+          cy="54"
+          r="10"
+          fill="none"
+          stroke="#fff"
+          strokeWidth="1.5"
+          opacity="0.5"
+        />
         <circle cx="40" cy="54" r="4" fill="#fff" opacity="0.4" />
       </svg>
     ),
@@ -85,11 +158,48 @@ const CARDS = [
     dark: true,
     icon: (
       <svg viewBox="0 0 80 80" className="card-icon card-icon-dark">
-        <rect x="18" y="24" width="44" height="32" rx="5" fill="none" stroke="#c9975a" strokeWidth="2" />
-        <circle cx="40" cy="40" r="10" fill="none" stroke="#c9975a" strokeWidth="2" />
-        <circle cx="40" cy="40" r="4" fill="none" stroke="#c9975a" strokeWidth="1.5" />
-        <rect x="28" y="18" width="14" height="6" rx="3" fill="none" stroke="#c9975a" strokeWidth="1.5" />
-        <path d="M35 14l5-4 5 4" fill="none" stroke="#c9975a" strokeWidth="1.5" />
+        <rect
+          x="18"
+          y="24"
+          width="44"
+          height="32"
+          rx="5"
+          fill="none"
+          stroke="#c9975a"
+          strokeWidth="2"
+        />
+        <circle
+          cx="40"
+          cy="40"
+          r="10"
+          fill="none"
+          stroke="#c9975a"
+          strokeWidth="2"
+        />
+        <circle
+          cx="40"
+          cy="40"
+          r="4"
+          fill="none"
+          stroke="#c9975a"
+          strokeWidth="1.5"
+        />
+        <rect
+          x="28"
+          y="18"
+          width="14"
+          height="6"
+          rx="3"
+          fill="none"
+          stroke="#c9975a"
+          strokeWidth="1.5"
+        />
+        <path
+          d="M35 14l5-4 5 4"
+          fill="none"
+          stroke="#c9975a"
+          strokeWidth="1.5"
+        />
       </svg>
     ),
   },
@@ -107,20 +217,68 @@ export default function CoverScreen({ onStart }: Props) {
 
       {/* Corner ornaments */}
       <svg className="corner corner-tl" viewBox="0 0 60 60">
-        <path d="M2 58 L2 2 L58 2" fill="none" stroke="#c9a96a" strokeWidth="1.5" opacity="0.4" />
-        <path d="M8 52 L8 8 L52 8" fill="none" stroke="#c9a96a" strokeWidth="1" opacity="0.25" />
+        <path
+          d="M2 58 L2 2 L58 2"
+          fill="none"
+          stroke="#c9a96a"
+          strokeWidth="1.5"
+          opacity="0.4"
+        />
+        <path
+          d="M8 52 L8 8 L52 8"
+          fill="none"
+          stroke="#c9a96a"
+          strokeWidth="1"
+          opacity="0.25"
+        />
       </svg>
       <svg className="corner corner-tr" viewBox="0 0 60 60">
-        <path d="M58 58 L58 2 L2 2" fill="none" stroke="#c9a96a" strokeWidth="1.5" opacity="0.4" />
-        <path d="M52 52 L52 8 L8 8" fill="none" stroke="#c9a96a" strokeWidth="1" opacity="0.25" />
+        <path
+          d="M58 58 L58 2 L2 2"
+          fill="none"
+          stroke="#c9a96a"
+          strokeWidth="1.5"
+          opacity="0.4"
+        />
+        <path
+          d="M52 52 L52 8 L8 8"
+          fill="none"
+          stroke="#c9a96a"
+          strokeWidth="1"
+          opacity="0.25"
+        />
       </svg>
       <svg className="corner corner-bl" viewBox="0 0 60 60">
-        <path d="M2 2 L2 58 L58 58" fill="none" stroke="#c9a96a" strokeWidth="1.5" opacity="0.4" />
-        <path d="M8 8 L8 52 L52 52" fill="none" stroke="#c9a96a" strokeWidth="1" opacity="0.25" />
+        <path
+          d="M2 2 L2 58 L58 58"
+          fill="none"
+          stroke="#c9a96a"
+          strokeWidth="1.5"
+          opacity="0.4"
+        />
+        <path
+          d="M8 8 L8 52 L52 52"
+          fill="none"
+          stroke="#c9a96a"
+          strokeWidth="1"
+          opacity="0.25"
+        />
       </svg>
       <svg className="corner corner-br" viewBox="0 0 60 60">
-        <path d="M58 2 L58 58 L2 58" fill="none" stroke="#c9a96a" strokeWidth="1.5" opacity="0.4" />
-        <path d="M52 8 L52 52 L8 52" fill="none" stroke="#c9a96a" strokeWidth="1" opacity="0.25" />
+        <path
+          d="M58 2 L58 58 L2 58"
+          fill="none"
+          stroke="#c9a96a"
+          strokeWidth="1.5"
+          opacity="0.4"
+        />
+        <path
+          d="M52 8 L52 52 L8 52"
+          fill="none"
+          stroke="#c9a96a"
+          strokeWidth="1"
+          opacity="0.25"
+        />
       </svg>
 
       <div className="cover-content">
@@ -149,14 +307,18 @@ export default function CoverScreen({ onStart }: Props) {
             >
               {card.icon}
               <span className="card-title">{card.title}</span>
-              {card.titleLine2 && <span className="card-title card-title-big">{card.titleLine2}</span>}
-              {card.subtitle && <span className="card-subtitle">{card.subtitle}</span>}
+              {card.titleLine2 && (
+                <span className="card-title card-title-big">
+                  {card.titleLine2}
+                </span>
+              )}
+              {card.subtitle && (
+                <span className="card-subtitle">{card.subtitle}</span>
+              )}
               {card.desc && <span className="card-desc">{card.desc}</span>}
             </button>
           ))}
         </div>
-
-        <p className="cover-hint">เลือกประสบการณ์ที่ต้องการ</p>
       </div>
 
       <style>{`

@@ -9,10 +9,11 @@ import {
   Warning,
   Sparkle,
   ArrowCounterClockwise,
-  ArrowLeft,
+  CaretLeft,
 } from "@phosphor-icons/react";
 import CoverScreen from "./components/CoverScreen";
 import LotteryScreen from "./components/LotteryScreen";
+import WordsScreen from "./components/WordsScreen";
 import TicketViewer from "./components/TicketViewer";
 
 const PRINTER_URL = "https://printer-hackathon.synoralab.dev";
@@ -35,7 +36,13 @@ const FORTUNES = [
   "มีคนแอบชอบ",
 ];
 
-function applyDithering(ctx: CanvasRenderingContext2D, width: number, height: number, startX: number, startY: number) {
+function applyDithering(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  startX: number,
+  startY: number,
+) {
   const imgData = ctx.getImageData(startX, startY, width, height);
   const d = imgData.data;
   const idx = (x: number, y: number) => (y * width + x) * 4;
@@ -49,26 +56,29 @@ function applyDithering(ctx: CanvasRenderingContext2D, width: number, height: nu
       const err = gray - val;
       if (x + 1 < width) {
         const n = idx(x + 1, y);
-        d[n] = d[n + 1] = d[n + 2] = d[n] + err * 7 / 16;
+        d[n] = d[n + 1] = d[n + 2] = d[n] + (err * 7) / 16;
       }
       if (x - 1 >= 0 && y + 1 < height) {
         const n = idx(x - 1, y + 1);
-        d[n] = d[n + 1] = d[n + 2] = d[n] + err * 3 / 16;
+        d[n] = d[n + 1] = d[n + 2] = d[n] + (err * 3) / 16;
       }
       if (y + 1 < height) {
         const n = idx(x, y + 1);
-        d[n] = d[n + 1] = d[n + 2] = d[n] + err * 5 / 16;
+        d[n] = d[n + 1] = d[n + 2] = d[n] + (err * 5) / 16;
       }
       if (x + 1 < width && y + 1 < height) {
         const n = idx(x + 1, y + 1);
-        d[n] = d[n + 1] = d[n + 2] = d[n] + err * 1 / 16;
+        d[n] = d[n + 1] = d[n + 2] = d[n] + (err * 1) / 16;
       }
     }
   }
   ctx.putImageData(imgData, startX, startY);
 }
 
-type Status = { icon: "ok" | "err" | "load" | "print" | "warn" | ""; text: string };
+type Status = {
+  icon: "ok" | "err" | "load" | "print" | "warn" | "";
+  text: string;
+};
 type Toast = { type: "success" | "error"; text: string } | null;
 
 function getViewTicket(): string | null {
@@ -105,7 +115,7 @@ export default function App() {
       streamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
       setCameraReady(true);
-      setStatus({ icon: "ok", text: "ตู้พร้อมใช้งาน" });
+      setStatus({ icon: "", text: "" });
       return true;
     } catch {
       setCameraError(true);
@@ -147,7 +157,10 @@ export default function App() {
 
     const vw = video.videoWidth;
     const vh = video.videoHeight;
-    let cropW = vw, cropH = vh, sx = 0, sy = 0;
+    let cropW = vw,
+      cropH = vh,
+      sx = 0,
+      sy = 0;
     if (vw > vh) {
       cropW = vh;
       sx = (vw - cropW) / 2;
@@ -164,7 +177,17 @@ export default function App() {
     tCtx.scale(-1, 1);
     tCtx.drawImage(video, sx, sy, cropW, cropH, 0, 0, cropW, cropH);
 
-    ctx.drawImage(tmp, 0, 0, cropW, cropH, IMG_PAD, IMG_PAD, IMG_SIZE, IMG_SIZE);
+    ctx.drawImage(
+      tmp,
+      0,
+      0,
+      cropW,
+      cropH,
+      IMG_PAD,
+      IMG_PAD,
+      IMG_SIZE,
+      IMG_SIZE,
+    );
     applyDithering(ctx, IMG_SIZE, IMG_SIZE, IMG_PAD, IMG_PAD);
 
     const f = FORTUNES[Math.floor(Math.random() * FORTUNES.length)];
@@ -178,7 +201,7 @@ export default function App() {
     const dataUrl = canvas.toDataURL("image/png");
     setPreviewSrc(dataUrl);
     setBusy(false);
-    setStatus({ icon: "ok", text: "ตู้พร้อมใช้งาน" });
+    setStatus({ icon: "", text: "" });
   }, [busy, printing, cameraReady, startCamera]);
 
   const printPhoto = useCallback(async () => {
@@ -211,7 +234,10 @@ export default function App() {
         if (res.status === 201) {
           const data = await res.json();
           const jobId = data.jobId;
-          setStatus({ icon: "load", text: `Job: ${jobId.slice(0, 8)}... กำลังตรวจสอบ` });
+          setStatus({
+            icon: "load",
+            text: `Job: ${jobId.slice(0, 8)}... กำลังตรวจสอบ`,
+          });
 
           let pollCount = 0;
           const poll = setInterval(async () => {
@@ -228,13 +254,16 @@ export default function App() {
               const job = await jr.json();
               if (job.status === "done") {
                 clearInterval(poll);
-                setStatus({ icon: "ok", text: "ตู้พร้อมใช้งาน" });
+                setStatus({ icon: "", text: "" });
                 setPrinting(false);
                 showToast("success", `ปริ้นสำเร็จแล้ว! คำทำนาย: ${fortune}`);
               } else if (job.status === "failed") {
                 clearInterval(poll);
                 setPrinting(false);
-                showToast("error", `การปริ้นล้มเหลว: ${job.error || "ไม่ทราบสาเหตุ"}`);
+                showToast(
+                  "error",
+                  `การปริ้นล้มเหลว: ${job.error || "ไม่ทราบสาเหตุ"}`,
+                );
                 setStatus({ icon: "err", text: "ปริ้นล้มเหลว" });
               } else if (job.status === "printing") {
                 setStatus({ icon: "print", text: `กำลังพ่นหมึก...` });
@@ -264,7 +293,7 @@ export default function App() {
     setFortune("");
     setBusy(false);
     setPrinting(false);
-    setStatus({ icon: "ok", text: "ตู้พร้อมใช้งาน" });
+    setStatus({ icon: "", text: "" });
   }, []);
 
   const goBack = useCallback(() => {
@@ -282,7 +311,15 @@ export default function App() {
   }, []);
 
   if (viewTicket) {
-    return <TicketViewer ticketNumber={viewTicket} onClose={() => { window.location.hash = ""; setViewTicket(null); }} />;
+    return (
+      <TicketViewer
+        ticketNumber={viewTicket}
+        onClose={() => {
+          window.location.hash = "";
+          setViewTicket(null);
+        }}
+      />
+    );
   }
 
   if (!mode) {
@@ -293,28 +330,57 @@ export default function App() {
     return <LotteryScreen onBack={() => setMode(null)} />;
   }
 
+  if (mode === "words") {
+    return <WordsScreen onBack={() => setMode(null)} />;
+  }
+
   return (
     <>
+      <button
+        className="fixed top-4 left-4 z-50 flex items-center justify-center w-10 h-10 rounded-full bg-white/80 text-slate-600 shadow-md backdrop-blur border-none cursor-pointer transition-all duration-200 hover:bg-white hover:text-slate-800"
+        style={{ fontFamily: "inherit" }}
+        onClick={goBack}
+      >
+        <CaretLeft size={32} />
+      </button>
       <div className="container">
-        <button className="back-btn" onClick={goBack}>
-          <ArrowLeft className="icon-inline" weight="bold" /> กลับ
-        </button>
         {status.text && (
-          <div className={`status ${status.icon === "ok" ? "status-ok" : status.icon === "err" ? "status-err" : status.icon === "warn" ? "status-warn" : ""}`}>
-            {status.icon === "ok" && <CheckCircle className="icon-inline" weight="fill" />}
-            {status.icon === "err" && <XCircle className="icon-inline" weight="fill" />}
-            {status.icon === "load" && <SpinnerGap className="icon-inline icon-spin" weight="bold" />}
-            {status.icon === "print" && <Printer className="icon-inline" weight="fill" />}
-            {status.icon === "warn" && <Warning className="icon-inline" weight="fill" />}
-            {" "}{status.text}
+          <div
+            className={`status ${status.icon === "ok" ? "status-ok" : status.icon === "err" ? "status-err" : status.icon === "warn" ? "status-warn" : ""}`}
+          >
+            {status.icon === "ok" && (
+              <CheckCircle className="icon-inline" weight="fill" />
+            )}
+            {status.icon === "err" && (
+              <XCircle className="icon-inline" weight="fill" />
+            )}
+            {status.icon === "load" && (
+              <SpinnerGap className="icon-inline icon-spin" weight="bold" />
+            )}
+            {status.icon === "print" && (
+              <Printer className="icon-inline" weight="fill" />
+            )}
+            {status.icon === "warn" && (
+              <Warning className="icon-inline" weight="fill" />
+            )}{" "}
+            {status.text}
           </div>
         )}
-        <h2><Sparkle className="icon-inline" weight="fill" /> ตู้ถ่ายรูปโพลารอยด์ทำนายดวง <Sparkle className="icon-inline" weight="fill" /></h2>
+        <h2>
+          <Sparkle className="icon-inline" weight="fill" /> ดวงวันนี้{" "}
+          <Sparkle className="icon-inline" weight="fill" />
+        </h2>
 
         {!previewSrc && (
           <>
             <div className="camera-wrapper">
-              <video ref={videoRef} autoPlay playsInline muted className={`camera ${cameraReady ? "" : "camera-hidden"}`} />
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className={`camera ${cameraReady ? "" : "camera-hidden"}`}
+              />
               {!cameraReady && !cameraError && (
                 <div className="camera-placeholder">
                   <Camera className="placeholder-icon" weight="light" />
@@ -327,9 +393,21 @@ export default function App() {
                     <XCircle size={40} weight="fill" />
                   </div>
                   <p className="camera-error-title">ไม่สามารถเข้าถึงกล้องได้</p>
-                  <p className="camera-error-desc">กรุณาเปิดสิทธิ์กล้องในเบราว์เซอร์แล้วลองใหม่</p>
-                  <button className="camera-error-btn" onClick={() => { setCameraError(false); startCamera(); }}>
-                    <ArrowCounterClockwise className="icon-inline" weight="bold" /> ลองใหม่
+                  <p className="camera-error-desc">
+                    กรุณาเปิดสิทธิ์กล้องในเบราว์เซอร์แล้วลองใหม่
+                  </p>
+                  <button
+                    className="camera-error-btn"
+                    onClick={() => {
+                      setCameraError(false);
+                      startCamera();
+                    }}
+                  >
+                    <ArrowCounterClockwise
+                      className="icon-inline"
+                      weight="bold"
+                    />{" "}
+                    ลองใหม่
                   </button>
                 </div>
               )}
@@ -338,7 +416,15 @@ export default function App() {
             {!cameraError && (
               <div className="controls">
                 <button onClick={snap} disabled={busy} className="snap-btn">
-                  {cameraReady ? <><Aperture className="icon-inline" weight="bold" /> แชะ!</> : <><Camera className="icon-inline" weight="bold" /> เปิดกล้อง</>}
+                  {cameraReady ? (
+                    <>
+                      <Aperture className="icon-inline" weight="bold" /> แชะ!
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="icon-inline" weight="bold" /> เปิดกล้อง
+                    </>
+                  )}
                 </button>
               </div>
             )}
@@ -347,16 +433,34 @@ export default function App() {
 
         {previewSrc && (
           <div className="result">
-            <h3>ตัวอย่างรูปที่จะปริ้น</h3>
             <img src={previewSrc} alt="Polaroid Preview" className="preview" />
             <div className="result-actions">
-              <button onClick={printPhoto} disabled={printing} className="print-btn">
-                {printing
-                  ? <><SpinnerGap className="icon-inline icon-spin" weight="bold" /> กำลังปริ้น...</>
-                  : <><Printer className="icon-inline" weight="bold" /> ปริ้น</>}
+              <button
+                onClick={printPhoto}
+                disabled={printing}
+                className="print-btn"
+              >
+                {printing ? (
+                  <>
+                    <SpinnerGap
+                      className="icon-inline icon-spin"
+                      weight="bold"
+                    />{" "}
+                    กำลังปริ้น...
+                  </>
+                ) : (
+                  <>
+                    <Printer className="icon-inline" weight="bold" /> ปริ้น
+                  </>
+                )}
               </button>
-              <button onClick={resetForNewPhoto} disabled={printing} className="new-photo-btn">
-                <ArrowCounterClockwise className="icon-inline" weight="bold" /> ถ่ายใหม่
+              <button
+                onClick={resetForNewPhoto}
+                disabled={printing}
+                className="new-photo-btn"
+              >
+                <ArrowCounterClockwise className="icon-inline" weight="bold" />{" "}
+                ถ่ายใหม่
               </button>
             </div>
           </div>
@@ -364,15 +468,24 @@ export default function App() {
       </div>
 
       {toast && (
-        <div className={`toast ${toast.type === "success" ? "toast-success" : "toast-error"}`}>
-          {toast.type === "success"
-            ? <CheckCircle className="icon-inline" weight="fill" size={20} />
-            : <XCircle className="icon-inline" weight="fill" size={20} />}
+        <div
+          className={`toast ${toast.type === "success" ? "toast-success" : "toast-error"}`}
+        >
+          {toast.type === "success" ? (
+            <CheckCircle className="icon-inline" weight="fill" size={20} />
+          ) : (
+            <XCircle className="icon-inline" weight="fill" size={20} />
+          )}
           <span>{toast.text}</span>
         </div>
       )}
 
-      <canvas ref={canvasRef} width={CANVAS_W} height={CANVAS_H} className="hidden" />
+      <canvas
+        ref={canvasRef}
+        width={CANVAS_W}
+        height={CANVAS_H}
+        className="hidden"
+      />
 
       <style>{`
         .container {
@@ -383,7 +496,7 @@ export default function App() {
           border-radius: 24px;
           box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
           text-align: center;
-          max-width: 700px;
+          max-width: 500px;
           width: 100%;
           position: relative;
         }

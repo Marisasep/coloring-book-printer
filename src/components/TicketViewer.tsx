@@ -3,13 +3,16 @@ import { getTicketImage } from "../lib/ticketStore";
 
 type Props = { ticketNumber: string; onClose: () => void };
 
-export default function TicketViewer({ ticketNumber, onClose }: Props) {
+export default function TicketViewer({ ticketNumber, onClose: _onClose }: Props) {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getTicketImage(ticketNumber)
-      .then((src) => { setImageSrc(src); setLoading(false); })
+      .then((src) => {
+        setImageSrc(src);
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
   }, [ticketNumber]);
 
@@ -26,8 +29,13 @@ export default function TicketViewer({ ticketNumber, onClose }: Props) {
     try {
       const res = await fetch(imageSrc);
       const blob = await res.blob();
-      const file = new File([blob], `lottery_${ticketNumber}.png`, { type: "image/png" });
-      const shareData: ShareData = { files: [file], title: `สลาก ${ticketNumber}` };
+      const file = new File([blob], `lottery_${ticketNumber}.png`, {
+        type: "image/png",
+      });
+      const shareData: ShareData = {
+        files: [file],
+        title: `สลาก ${ticketNumber}`,
+      };
       if (navigator.canShare && navigator.canShare(shareData)) {
         await navigator.share(shareData);
       } else {
@@ -45,31 +53,36 @@ export default function TicketViewer({ ticketNumber, onClose }: Props) {
   return (
     <div className="tv-overlay">
       <div className="tv-card">
-        <h2 className="tv-title">สลากของคุณ</h2>
-        <p className="tv-number">เลขที่ <strong>{ticketNumber}</strong></p>
-
         {loading && <p className="tv-msg">กำลังโหลด...</p>}
 
         {!loading && !imageSrc && (
           <div className="tv-not-found">
             <p>ไม่พบสลากหมายเลขนี้</p>
-            <p className="tv-hint">สลากอาจถูกสร้างจากเครื่องอื่น หรือข้อมูลถูกล้างไปแล้ว</p>
+            <p className="tv-hint">
+              สลากอาจถูกสร้างจากเครื่องอื่น หรือข้อมูลถูกล้างไปแล้ว
+            </p>
           </div>
         )}
 
         {imageSrc && (
           <>
-            <img src={imageSrc} alt={`สลาก ${ticketNumber}`} className="tv-img" />
+            <img
+              src={imageSrc}
+              alt={`สลาก ${ticketNumber}`}
+              className="tv-img"
+            />
             <div className="tv-actions">
               {"share" in navigator && (
-                <button className="tv-share-btn" onClick={share}>แชร์</button>
+                <button className="tv-share-btn" onClick={share}>
+                  แชร์
+                </button>
               )}
-              <button className="tv-dl-btn" onClick={download}>ดาวน์โหลด</button>
+              <button className="tv-dl-btn" onClick={download}>
+                ดาวน์โหลด
+              </button>
             </div>
           </>
         )}
-
-        <button className="tv-close" onClick={onClose}>ปิด</button>
       </div>
 
       <style>{`
@@ -123,7 +136,7 @@ export default function TicketViewer({ ticketNumber, onClose }: Props) {
           width: 100%;
           border-radius: 8px;
           box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-          border: 1px solid #e5e7eb;
+          border: none;
           margin-bottom: 16px;
         }
         .tv-actions {

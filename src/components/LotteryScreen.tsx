@@ -3,6 +3,7 @@ import { generateUniqueNumber, getRemainingCount } from "../lib/ticketNumbers";
 import { prepareTicketData, captureTicket, type TicketData } from "../lib/lotteryTicket";
 import { saveTicketImage } from "../lib/ticketStore";
 import LotteryTicket from "./LotteryTicket";
+import { CaretLeft } from "@phosphor-icons/react";
 
 const PRINTER_URL = "https://printer-hackathon.synoralab.dev";
 const MAX_POLL = 30;
@@ -28,6 +29,7 @@ export default function LotteryScreen({ onBack }: Props) {
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<Toast>(null);
   const [statusText, setStatusText] = useState("");
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null);
 
   const showToast = useCallback((type: "success" | "error", text: string) => {
     setToast({ type, text });
@@ -144,34 +146,28 @@ export default function LotteryScreen({ onBack }: Props) {
     stopCamera();
   }, [busy, cameraReady, remaining, startCamera, stopCamera]);
 
-  // Capture the rendered ticket to canvas after it mounts
+  // Capture the rendered ticket to image after it mounts
   useEffect(() => {
     if (!ticketData || !ticketRef.current) return;
     let cancelled = false;
     (async () => {
-      // Wait one frame for the DOM to paint
       await new Promise((r) => requestAnimationFrame(r));
       if (cancelled || !ticketRef.current) return;
       const { preview, print } = await captureTicket(ticketRef.current);
       if (cancelled) return;
       printCanvasRef.current = print;
       const dataUrl = preview.toDataURL("image/png");
+      setPreviewSrc(dataUrl);
       await saveTicketImage(ticketData.ticketNumber, dataUrl);
     })();
     return () => { cancelled = true; };
   }, [ticketData]);
 
   const printTicket = useCallback(async () => {
-    if (!ticketRef.current) return;
+    const canvas = printCanvasRef.current;
+    if (!canvas) return;
 
     setPhase("printing");
-    setStatusText("กำลังสร้างรูป...");
-
-    await new Promise((r) => requestAnimationFrame(r));
-    const { print } = await captureTicket(ticketRef.current);
-    printCanvasRef.current = print;
-    const canvas = print;
-
     setStatusText("กำลังส่งพิมพ์...");
 
     canvas.toBlob(async (blob: Blob | null) => {
@@ -246,6 +242,7 @@ export default function LotteryScreen({ onBack }: Props) {
   const retryNew = useCallback(() => {
     setTicketData(null);
     setTicketNumber("");
+    setPreviewSrc(null);
     printCanvasRef.current = null;
     setPhase("camera");
     setRemaining(getRemainingCount());
@@ -259,28 +256,16 @@ export default function LotteryScreen({ onBack }: Props) {
 
   return (
     <>
-      <div className="relative w-full max-w-[700px] rounded-3xl bg-white/85 text-center shadow-[0_10px_40px_rgba(0,0,0,0.05)] backdrop-blur-[10px] p-[clamp(16px,5vw,30px)]">
-        <button
-          className="absolute top-[clamp(12px,3vw,18px)] left-[clamp(12px,3vw,18px)] flex items-center gap-1 rounded-[14px] bg-slate-100 px-3.5 py-1.5 text-[0.85rem] font-medium text-slate-500 transition-all duration-200 hover:bg-slate-200 hover:text-slate-600 border-none cursor-pointer font-[inherit]"
-          onClick={handleBack}
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 20 20"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M13 4l-6 6 6 6" />
-          </svg>
-          กลับ
-        </button>
+      <button
+        className="fixed top-4 left-4 z-50 flex items-center justify-center w-10 h-10 rounded-full bg-white/80 text-slate-600 shadow-md backdrop-blur border-none cursor-pointer transition-all duration-200 hover:bg-white hover:text-slate-800"
+        onClick={handleBack}
+      >
+        <CaretLeft size={32} />
+      </button>
+      <div className="relative w-full max-w-[500px] rounded-3xl bg-white/85 text-center shadow-[0_10px_40px_rgba(0,0,0,0.05)] backdrop-blur-[10px] p-[clamp(16px,5vw,30px)]">
 
-        <h2 className="m-0 font-semibold text-[#555] text-[clamp(1.2rem,4vw,1.5rem)]">จับฉันที</h2>
-        <p className="text-[0.8rem] text-[#aaa] mt-0.5 mb-[clamp(12px,3vw,20px)]">Catch Me If You Can</p>
+        <h2 className="m-0 font-semibold text-[#555] text-[clamp(1.2rem,4vw,1.5rem)]">สลากกินไม่แบ่ง</h2>
+        <p className="text-[0.8rem] text-[#aaa] mt-0.5 mb-[clamp(12px,3vw,20px)]">Photo Lottery</p>
 
         {phase === "camera" && (
           <>
@@ -336,7 +321,7 @@ export default function LotteryScreen({ onBack }: Props) {
                   {busy
                     ? "กำลังสร้างสลาก..."
                     : cameraReady
-                      ? "จับฉันที!"
+                      ? "ลุ้นโชค!"
                       : "เปิดกล้อง"}
                 </button>
               </div>
@@ -344,9 +329,20 @@ export default function LotteryScreen({ onBack }: Props) {
           </>
         )}
 
-        {phase === "preview" && ticketData && (
+        {/* Hidden ticket for html2canvas capture */}
+        {ticketData && !previewSrc && (
           <div className="flex flex-col items-center gap-3">
             <LotteryTicket ref={ticketRef} {...ticketData} />
+            <div className="flex items-center gap-2 text-[0.9rem] text-slate-500">
+              <span className="lt-spinner size-[18px] rounded-full border-[2.5px] border-slate-200 border-t-slate-500" />
+              <span>กำลังสร้างสลาก...</span>
+            </div>
+          </div>
+        )}
+
+        {phase === "preview" && previewSrc && (
+          <div className="flex flex-col items-center gap-3">
+            <img src={previewSrc} alt="สลาก" className="w-full max-w-[500px] rounded" />
             <div className="flex flex-wrap justify-center gap-3">
               <button
                 className="lt-print-btn cursor-pointer rounded-[30px] border-none px-8 py-3 text-base font-medium text-white font-[inherit] transition-all duration-300"
@@ -358,15 +354,15 @@ export default function LotteryScreen({ onBack }: Props) {
                 className="cursor-pointer rounded-[30px] border-2 border-slate-200 bg-white/90 px-6 py-2.5 text-[0.9rem] font-medium text-slate-500 font-[inherit] transition-all duration-200 hover:bg-slate-100"
                 onClick={retryNew}
               >
-                จับใหม่
+                ลุ้นใหม่
               </button>
             </div>
           </div>
         )}
 
-        {phase === "printing" && ticketData && (
+        {phase === "printing" && previewSrc && (
           <div className="flex flex-col items-center gap-3">
-            <LotteryTicket ref={ticketRef} {...ticketData} />
+            <img src={previewSrc} alt="สลาก" className="w-full max-w-[500px] rounded" />
             <div className="flex items-center gap-2 text-[0.9rem] text-slate-500">
               <span className="lt-spinner size-[18px] rounded-full border-[2.5px] border-slate-200 border-t-slate-500" />
               <span>{statusText}</span>
@@ -374,15 +370,15 @@ export default function LotteryScreen({ onBack }: Props) {
           </div>
         )}
 
-        {phase === "done" && ticketData && (
+        {phase === "done" && previewSrc && (
           <div className="flex flex-col items-center gap-3">
-            <LotteryTicket ref={ticketRef} {...ticketData} />
+            <img src={previewSrc} alt="สลาก" className="w-full max-w-[500px] rounded" />
             <div className="flex flex-wrap justify-center gap-3">
               <button
                 className="lt-snap-btn w-full max-w-[340px] cursor-pointer rounded-[30px] border-none px-9 py-3.5 text-[1.1rem] font-semibold text-white font-[inherit] transition-all duration-300"
                 onClick={retryNew}
               >
-                จับฉันทีอีก
+                ลุ้นอีกครั้ง
               </button>
               <button
                 className="cursor-pointer rounded-[30px] border-2 border-slate-200 bg-white/90 px-6 py-2.5 text-[0.9rem] font-medium text-slate-500 font-[inherit] transition-all duration-200 hover:bg-slate-100"
