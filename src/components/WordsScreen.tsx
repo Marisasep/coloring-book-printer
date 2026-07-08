@@ -66,15 +66,17 @@ export default function WordsScreen({ onBack }: Props) {
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<Toast>(null);
   const [statusText, setStatusText] = useState("");
+  const [facing, setFacing] = useState<"user" | "environment">("user");
 
   const showToast = useCallback((type: "success" | "error", text: string) => {
     setToast({ type, text });
     setTimeout(() => setToast(null), 3500);
   }, []);
 
-  const startCamera = useCallback(async () => {
+  const startCamera = useCallback(async (mode: "user" | "environment" = facing) => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: mode } });
       streamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
       setCameraReady(true);
@@ -84,7 +86,13 @@ export default function WordsScreen({ onBack }: Props) {
       setCameraError(true);
       return false;
     }
-  }, []);
+  }, [facing]);
+
+  const flipCamera = useCallback(async () => {
+    const next = facing === "user" ? "environment" : "user";
+    setFacing(next);
+    await startCamera(next);
+  }, [facing, startCamera]);
 
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -118,8 +126,10 @@ export default function WordsScreen({ onBack }: Props) {
     const tmp = document.createElement("canvas");
     tmp.width = cropW; tmp.height = cropH;
     const tCtx = tmp.getContext("2d")!;
-    tCtx.translate(cropW, 0);
-    tCtx.scale(-1, 1);
+    if (facing === "user") {
+      tCtx.translate(cropW, 0);
+      tCtx.scale(-1, 1);
+    }
     tCtx.drawImage(video, sx, sy, cropW, cropH, 0, 0, cropW, cropH);
 
     ctx.drawImage(tmp, 0, 0, cropW, cropH, IMG_PAD, IMG_PAD, IMG_SIZE, IMG_SIZE);
@@ -219,7 +229,7 @@ export default function WordsScreen({ onBack }: Props) {
               <video
                 ref={videoRef}
                 autoPlay playsInline muted
-                className={`w-full h-full rounded-2xl -scale-x-100 bg-black block object-cover border-4 border-white shadow-[0_4px_15px_rgba(0,0,0,0.05)] ${cameraReady ? "" : "absolute w-px h-px opacity-0 pointer-events-none"}`}
+                className={`w-full h-full rounded-2xl bg-black block object-cover border-4 border-white shadow-[0_4px_15px_rgba(0,0,0,0.05)] ${facing === "user" ? "-scale-x-100" : ""} ${cameraReady ? "" : "absolute w-px h-px opacity-0 pointer-events-none"}`}
               />
               {!cameraReady && !cameraError && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-2xl border-3 border-dashed border-gray-300 bg-[#f8f9fa]">
@@ -239,13 +249,24 @@ export default function WordsScreen({ onBack }: Props) {
               )}
             </div>
             {!cameraError && (
-              <div className="mt-[clamp(16px,4vw,25px)] flex flex-col items-center gap-2">
+              <div className="mt-[clamp(16px,4vw,25px)] flex items-center justify-center gap-3">
                 <button
-                  className="ws-snap-btn w-full max-w-[340px] cursor-pointer rounded-[30px] border-none px-9 py-3.5 text-[1.1rem] font-semibold text-white font-[inherit] transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="ws-snap-btn flex-1 max-w-[340px] cursor-pointer rounded-[30px] border-none px-9 py-3.5 text-[1.1rem] font-semibold text-white font-[inherit] transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
                   onClick={snap} disabled={busy}
                 >
                   {busy ? "กำลังสร้าง..." : cameraReady ? "ค้นหาตัวเอง!" : "เปิดกล้อง"}
                 </button>
+                {cameraReady && (
+                  <button
+                    className="flex items-center justify-center w-12 h-12 rounded-full bg-white/90 border-2 border-gray-200 cursor-pointer shadow-md transition-all duration-200 hover:bg-white shrink-0"
+                    onClick={flipCamera}
+                    title="สลับกล้อง"
+                  >
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 16v4H4v-4" /><path d="M4 8V4h16v4" /><polyline points="7 13 4 16 1 13" /><polyline points="17 11 20 8 23 11" />
+                    </svg>
+                  </button>
+                )}
               </div>
             )}
           </>
@@ -291,7 +312,7 @@ export default function WordsScreen({ onBack }: Props) {
       </div>
 
       {toast && (
-        <div className={`ws-toast fixed bottom-[30px] left-1/2 -translate-x-1/2 rounded-2xl px-6 py-3.5 text-[0.9rem] font-medium shadow-[0_10px_30px_rgba(0,0,0,0.15)] z-[200] max-w-[calc(100vw-40px)] ${toast.type === "success" ? "bg-emerald-50 text-green-600 border border-emerald-200" : "bg-red-50 text-red-600 border border-red-200"}`}>
+        <div className={`ws-toast fixed top-[30px] left-1/2 -translate-x-1/2 rounded-2xl px-6 py-3.5 text-[0.9rem] font-medium shadow-[0_10px_30px_rgba(0,0,0,0.15)] z-[200] max-w-[calc(100vw-40px)] ${toast.type === "success" ? "bg-emerald-50 text-green-600 border border-emerald-200" : "bg-red-50 text-red-600 border border-red-200"}`}>
           {toast.text}
         </div>
       )}
@@ -312,12 +333,12 @@ export default function WordsScreen({ onBack }: Props) {
         @keyframes ws-spin { to { transform: rotate(360deg); } }
         .ws-toast { animation: ws-toast-in 0.4s ease, ws-toast-out 0.4s ease 3s forwards; }
         @keyframes ws-toast-in {
-          from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+          from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
           to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
         @keyframes ws-toast-out {
           from { opacity: 1; transform: translateX(-50%) translateY(0); }
-          to { opacity: 0; transform: translateX(-50%) translateY(20px); }
+          to { opacity: 0; transform: translateX(-50%) translateY(-20px); }
         }
       `}</style>
     </>

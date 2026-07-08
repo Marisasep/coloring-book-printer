@@ -101,16 +101,18 @@ export default function App() {
   const [cameraReady, setCameraReady] = useState(false);
   const [cameraError, setCameraError] = useState(false);
   const [toast, setToast] = useState<Toast>(null);
+  const [facing, setFacing] = useState<"user" | "environment">("user");
 
   const showToast = useCallback((type: "success" | "error", text: string) => {
     setToast({ type, text });
     setTimeout(() => setToast(null), 3500);
   }, []);
 
-  const startCamera = useCallback(async () => {
+  const startCamera = useCallback(async (mode: "user" | "environment" = facing) => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user" },
+        video: { facingMode: mode },
       });
       streamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
@@ -121,7 +123,13 @@ export default function App() {
       setCameraError(true);
       return false;
     }
-  }, []);
+  }, [facing]);
+
+  const flipCamera = useCallback(async () => {
+    const next = facing === "user" ? "environment" : "user";
+    setFacing(next);
+    await startCamera(next);
+  }, [facing, startCamera]);
 
   useEffect(() => {
     return () => {
@@ -173,8 +181,10 @@ export default function App() {
     tmp.width = cropW;
     tmp.height = cropH;
     const tCtx = tmp.getContext("2d")!;
-    tCtx.translate(cropW, 0);
-    tCtx.scale(-1, 1);
+    if (facing === "user") {
+      tCtx.translate(cropW, 0);
+      tCtx.scale(-1, 1);
+    }
     tCtx.drawImage(video, sx, sy, cropW, cropH, 0, 0, cropW, cropH);
 
     ctx.drawImage(
@@ -305,6 +315,7 @@ export default function App() {
     setPrinting(false);
     setStatus({ icon: "", text: "" });
     setToast(null);
+    setFacing("user");
     setMode(null);
   }, []);
 
@@ -377,7 +388,7 @@ export default function App() {
                 autoPlay
                 playsInline
                 muted
-                className={`camera ${cameraReady ? "" : "camera-hidden"}`}
+                className={`camera ${facing === "user" ? "camera-mirror" : ""} ${cameraReady ? "" : "camera-hidden"}`}
               />
               {!cameraReady && !cameraError && (
                 <div className="camera-placeholder">
@@ -413,17 +424,30 @@ export default function App() {
 
             {!cameraError && (
               <div className="controls">
-                <button onClick={snap} disabled={busy} className="snap-btn">
-                  {cameraReady ? (
-                    <>
-                      <Aperture className="icon-inline" weight="bold" /> แชะ!
-                    </>
-                  ) : (
-                    <>
-                      <Camera className="icon-inline" weight="bold" /> เปิดกล้อง
-                    </>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, width: "100%" }}>
+                  <button onClick={snap} disabled={busy} className="snap-btn" style={{ flex: 1 }}>
+                    {cameraReady ? (
+                      <>
+                        <Aperture className="icon-inline" weight="bold" /> แชะ!
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="icon-inline" weight="bold" /> เปิดกล้อง
+                      </>
+                    )}
+                  </button>
+                  {cameraReady && (
+                    <button
+                      onClick={flipCamera}
+                      className="flip-btn"
+                      title="สลับกล้อง"
+                    >
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 16v4H4v-4" /><path d="M4 8V4h16v4" /><polyline points="7 13 4 16 1 13" /><polyline points="17 11 20 8 23 11" />
+                      </svg>
+                    </button>
                   )}
-                </button>
+                </div>
               </div>
             )}
           </>
@@ -549,12 +573,29 @@ export default function App() {
           width: 100%;
           height: 100%;
           border-radius: clamp(10px, 3vw, 16px);
-          transform: scaleX(-1);
           background: #fff;
           box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
           border: 4px solid #fff;
           display: block;
           object-fit: cover;
+        }
+        .flip-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.9);
+          border: 2px solid #e5e7eb;
+          cursor: pointer;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+          transition: all 0.2s ease;
+          flex-shrink: 0;
+        }
+        .flip-btn:hover { background: #fff; }
+        .camera-mirror {
+          transform: scaleX(-1);
         }
         .camera-hidden {
           position: absolute;
@@ -786,7 +827,7 @@ export default function App() {
 
         .toast {
           position: fixed;
-          bottom: clamp(20px, 5vw, 40px);
+          top: clamp(20px, 5vw, 40px);
           left: 50%;
           transform: translateX(-50%);
           padding: 14px 24px;
@@ -812,12 +853,12 @@ export default function App() {
           border: 1px solid #fecaca;
         }
         @keyframes toastIn {
-          from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+          from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
           to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
         @keyframes toastOut {
           from { opacity: 1; transform: translateX(-50%) translateY(0); }
-          to { opacity: 0; transform: translateX(-50%) translateY(20px); }
+          to { opacity: 0; transform: translateX(-50%) translateY(-20px); }
         }
 
         .icon-inline {
