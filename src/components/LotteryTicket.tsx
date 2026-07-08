@@ -113,10 +113,10 @@ const LotteryTicket = forwardRef<HTMLDivElement, Props>(function LotteryTicket(
               <div className="ltt-numbox">
                 <div className="ltt-numbox-inner">
                   {digits.map((d, i) => (
-                    <span key={i} className="ltt-digit">
-                      {d}
-                      <span className="ltt-digit-en">{digitWords[+d]}</span>
-                    </span>
+                    <div key={i} className="ltt-digit">
+                      <div className="ltt-digit-num">{d}</div>
+                      <div className="ltt-digit-en">{digitWords[+d]}</div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -331,20 +331,20 @@ const LotteryTicket = forwardRef<HTMLDivElement, Props>(function LotteryTicket(
           padding: 10px 0;
         }
         .ltt-digit {
-          font-size: 70px;
-          font-weight: bold;
-          line-height: 1;
           flex: 1;
           text-align: center;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
+        }
+        .ltt-digit-num {
+          font-size: 70px;
+          font-weight: bold;
+          line-height: 1.1;
         }
         .ltt-digit-en {
           font-size: 16px;
           font-weight: 600;
           letter-spacing: 0.1em;
-          margin-top: 4px;
+          line-height: 1;
+          margin-top: 2px;
         }
 
         /* ===== PERIOD ROW ===== */
