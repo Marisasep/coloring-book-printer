@@ -27,7 +27,16 @@ export default function TicketViewer({ ticketNumber, onClose }: Props) {
       const res = await fetch(imageSrc);
       const blob = await res.blob();
       const file = new File([blob], `lottery_${ticketNumber}.png`, { type: "image/png" });
-      await navigator.share({ files: [file], title: `สลาก ${ticketNumber}` });
+      const shareData: ShareData = { files: [file], title: `สลาก ${ticketNumber}` };
+      if (navigator.canShare && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.share({
+          title: `สลาก ${ticketNumber}`,
+          text: `สลากกินไม่แบ่ง เลขที่ ${ticketNumber}`,
+          url: `${window.location.origin}/#view=${ticketNumber}`,
+        });
+      }
     } catch {
       download();
     }
