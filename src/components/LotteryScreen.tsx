@@ -128,7 +128,10 @@ export default function LotteryScreen({ onBack }: Props) {
       });
     }
 
-    const viewUrl = `${window.location.origin}${window.location.pathname}#view=${num}`;
+    const baseUrl = window.location.hostname === "localhost"
+      ? "https://coloring-book-printer.pages.dev"
+      : window.location.origin;
+    const viewUrl = `${baseUrl}/#view=${num}`;
     const data = await prepareTicketData(
       photoCanvas,
       num,

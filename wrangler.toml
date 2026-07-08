@@ -1,0 +1,6 @@
+name = "coloring-book-printer"
+compatibility_date = "2024-12-01"
+
+[[kv_namespaces]]
+binding = "TICKETS"
+id = "7205dd8f3705420cabb0dbaa63caa5f7"

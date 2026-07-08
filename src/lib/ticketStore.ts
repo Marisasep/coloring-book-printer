@@ -17,22 +17,42 @@ export async function saveTicketImage(
   dataUrl: string,
 ): Promise<void> {
   const db = await openDB();
-  return new Promise((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, "readwrite");
     tx.objectStore(STORE_NAME).put(dataUrl, ticketNumber);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });
+
+  try {
+    await fetch(`/api/tickets/${ticketNumber}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: dataUrl }),
+    });
+  } catch {
+    // Silently fail — local copy is saved
+  }
 }
 
 export async function getTicketImage(
   ticketNumber: string,
 ): Promise<string | null> {
   const db = await openDB();
-  return new Promise((resolve, reject) => {
+  const local = await new Promise<string | null>((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, "readonly");
     const req = tx.objectStore(STORE_NAME).get(ticketNumber);
     req.onsuccess = () => resolve(req.result ?? null);
     req.onerror = () => reject(req.error);
   });
+  if (local) return local;
+
+  try {
+    const res = await fetch(`/api/tickets/${ticketNumber}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.image ?? null;
+  } catch {
+    return null;
+  }
 }
