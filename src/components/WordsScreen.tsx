@@ -149,13 +149,6 @@ export default function WordsScreen({ onBack }: Props) {
     canvas.toBlob(async (blob) => {
       if (!blob) { setPhase("preview"); return; }
 
-      const link = document.createElement("a");
-      const objUrl = URL.createObjectURL(blob);
-      link.download = `words_${Date.now()}.png`;
-      link.href = objUrl;
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(objUrl), 1000);
-
       try {
         const res = await fetch(`${PRINTER_URL}/print?label=62&cut=true`, { method: "POST", body: blob });
         if (res.status === 201) {
@@ -298,16 +291,16 @@ export default function WordsScreen({ onBack }: Props) {
 
       <style>{`
         .ws-snap-btn {
-          background: linear-gradient(135deg, #d4a96a 0%, #c9975a 100%);
-          box-shadow: 0 6px 20px rgba(201,151,90,0.4);
+          background: linear-gradient(135deg, #E5C060 0%, #B8860B 100%);
+          box-shadow: 0 6px 20px rgba(212,175,55,0.4);
         }
-        .ws-snap-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(201,151,90,0.6); }
+        .ws-snap-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(212,175,55,0.6); }
         .ws-snap-btn:active { transform: translateY(1px); }
         .ws-print-btn {
-          background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%);
-          box-shadow: 0 6px 20px rgba(52,211,153,0.4);
+          background: linear-gradient(135deg, #E5C060 0%, #B8860B 100%);
+          box-shadow: 0 6px 20px rgba(212,175,55,0.4);
         }
-        .ws-print-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(52,211,153,0.6); }
+        .ws-print-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(212,175,55,0.6); }
         .ws-spinner { animation: ws-spin 0.8s linear infinite; }
         @keyframes ws-spin { to { transform: rotate(360deg); } }
         .ws-toast { animation: ws-toast-in 0.4s ease, ws-toast-out 0.4s ease 3s forwards; }

@@ -193,9 +193,13 @@ export default function App() {
     const f = FORTUNES[Math.floor(Math.random() * FORTUNES.length)];
     setFortune(f);
     ctx.fillStyle = "#000000";
-    ctx.font = "bold 70px 'Prompt', Arial, sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
+    let fontSize = 70;
+    const maxTextWidth = CANVAS_W - IMG_PAD * 2;
+    do {
+      ctx.font = `bold ${fontSize}px 'Prompt', Arial, sans-serif`;
+    } while (ctx.measureText(f).width > maxTextWidth && --fontSize > 20);
     ctx.fillText(f, CANVAS_W / 2, 750);
 
     const dataUrl = canvas.toDataURL("image/png");
@@ -215,14 +219,6 @@ export default function App() {
         setPrinting(false);
         return;
       }
-
-      const ts = new Date().toISOString().replace(/[:.-]/g, "_");
-      const link = document.createElement("a");
-      const objUrl = URL.createObjectURL(blob);
-      link.download = `fortune_${ts}.png`;
-      link.href = objUrl;
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(objUrl), 1000);
 
       try {
         setStatus({ icon: "print", text: "กำลังส่งพิมพ์..." });
@@ -651,7 +647,7 @@ export default function App() {
         }
 
         .snap-btn {
-          background: linear-gradient(135deg, #ffb5a7 0%, #ffc3a0 100%);
+          background: linear-gradient(135deg, #E5C060 0%, #B8860B 100%);
           color: white;
           border: none;
           padding: clamp(12px, 3vw, 14px) clamp(24px, 6vw, 35px);
@@ -661,7 +657,7 @@ export default function App() {
           border-radius: 30px;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 6px 20px rgba(255, 181, 167, 0.4);
+          box-shadow: 0 6px 20px rgba(212,175,55,0.4);
           width: 100%;
           max-width: 340px;
           display: flex;
@@ -671,7 +667,7 @@ export default function App() {
         }
         .snap-btn:hover {
           transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(255, 181, 167, 0.6);
+          box-shadow: 0 8px 25px rgba(212,175,55,0.6);
         }
         .snap-btn:active {
           transform: translateY(1px);
@@ -730,7 +726,7 @@ export default function App() {
         }
 
         .print-btn {
-          background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%);
+          background: linear-gradient(135deg, #E5C060 0%, #B8860B 100%);
           color: white;
           border: none;
           padding: 12px 32px;
@@ -740,14 +736,14 @@ export default function App() {
           border-radius: 30px;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 6px 20px rgba(52, 211, 153, 0.4);
+          box-shadow: 0 6px 20px rgba(212,175,55,0.4);
           display: flex;
           align-items: center;
           gap: 6px;
         }
         .print-btn:hover {
           transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(52, 211, 153, 0.6);
+          box-shadow: 0 8px 25px rgba(212,175,55,0.6);
         }
         .print-btn:active {
           transform: translateY(1px);

@@ -176,14 +176,6 @@ export default function LotteryScreen({ onBack }: Props) {
         return;
       }
 
-      // Download locally too
-      const link = document.createElement("a");
-      const objUrl = URL.createObjectURL(blob);
-      link.download = `lottery_${ticketNumber}.png`;
-      link.href = objUrl;
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(objUrl), 1000);
-
       try {
         const res = await fetch(`${PRINTER_URL}/print?label=62&cut=true`, {
           method: "POST",
@@ -414,16 +406,16 @@ export default function LotteryScreen({ onBack }: Props) {
 
       <style>{`
         .lt-snap-btn {
-          background: linear-gradient(135deg, #f0c4c8 0%, #e8aeb4 100%);
-          box-shadow: 0 6px 20px rgba(232,174,180,0.4);
+          background: linear-gradient(135deg, #E5C060 0%, #B8860B 100%);
+          box-shadow: 0 6px 20px rgba(212,175,55,0.4);
         }
-        .lt-snap-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(232,174,180,0.6); }
+        .lt-snap-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(212,175,55,0.6); }
         .lt-snap-btn:active { transform: translateY(1px); }
         .lt-print-btn {
-          background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%);
-          box-shadow: 0 6px 20px rgba(52,211,153,0.4);
+          background: linear-gradient(135deg, #E5C060 0%, #B8860B 100%);
+          box-shadow: 0 6px 20px rgba(212,175,55,0.4);
         }
-        .lt-print-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(52,211,153,0.6); }
+        .lt-print-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(212,175,55,0.6); }
         .lt-spinner { animation: lt-spin 0.8s linear infinite; }
         @keyframes lt-spin { to { transform: rotate(360deg); } }
         .lt-toast { animation: lt-toast-in 0.4s ease, lt-toast-out 0.4s ease 3s forwards; }

@@ -89,7 +89,7 @@ export default function TicketViewer({ ticketNumber, onClose: _onClose }: Props)
         .tv-overlay {
           position: fixed;
           inset: 0;
-          background: linear-gradient(135deg, #ffd6e0 0%, #c8e7ff 50%, #fff3b0 100%);
+          background: linear-gradient(135deg, #FFE5EC 0%, #E0F7FA 50%, #F3E5AB 100%);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -156,14 +156,14 @@ export default function TicketViewer({ ticketNumber, onClose: _onClose }: Props)
           border: none;
         }
         .tv-share-btn {
-          background: linear-gradient(135deg, #6ee7b7, #34d399);
+          background: linear-gradient(135deg, #E5C060 0%, #B8860B 100%);
           color: white;
-          box-shadow: 0 4px 12px rgba(52,211,153,0.3);
+          box-shadow: 0 4px 12px rgba(212,175,55,0.3);
         }
         .tv-dl-btn {
-          background: linear-gradient(135deg, #93c5fd, #60a5fa);
-          color: white;
-          box-shadow: 0 4px 12px rgba(96,165,250,0.3);
+          background: linear-gradient(135deg, #E0F7FA 0%, #B2EBF2 100%);
+          color: #4a4a4a;
+          box-shadow: 0 4px 12px rgba(178,235,242,0.3);
         }
         .tv-share-btn:hover, .tv-dl-btn:hover {
           transform: translateY(-1px);

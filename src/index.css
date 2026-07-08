@@ -7,7 +7,7 @@
   body {
     margin: 0;
     font-family: "Prompt", "SF Pro Text", system-ui, -apple-system, Tahoma, sans-serif;
-    background: linear-gradient(135deg, #ffd6e0 0%, #c8e7ff 50%, #fff3b0 100%);
+    background: linear-gradient(135deg, #FFE5EC 0%, #E0F7FA 50%, #F3E5AB 100%);
     background-attachment: fixed;
     color: #4a4a4a;
     -webkit-font-smoothing: antialiased;
