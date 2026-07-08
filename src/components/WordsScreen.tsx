@@ -127,11 +127,18 @@ export default function WordsScreen({ onBack }: Props) {
 
     const three = pickThreeWords();
     setWords(three);
+    await document.fonts.ready;
     ctx.fillStyle = "#000000";
-    ctx.font = "bold 44px 'Prompt', Arial, sans-serif";
-    ctx.textAlign = "center";
+    ctx.textAlign = "left";
     ctx.textBaseline = "middle";
-    ctx.fillText(three.join("  ·  "), CANVAS_W / 2, 750);
+    const label = three.join("  ·  ");
+    let fontSize = 44;
+    const maxTextWidth = CANVAS_W - IMG_PAD * 2;
+    do {
+      ctx.font = `bold ${fontSize}px 'Prompt', Arial, sans-serif`;
+    } while (ctx.measureText(label).width > maxTextWidth && --fontSize > 20);
+    const tw = ctx.measureText(label).width;
+    ctx.fillText(label, (CANVAS_W - tw) / 2, 750);
 
     setPreviewSrc(canvas.toDataURL("image/png"));
     setPhase("preview");

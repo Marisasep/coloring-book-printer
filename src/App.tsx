@@ -192,15 +192,17 @@ export default function App() {
 
     const f = FORTUNES[Math.floor(Math.random() * FORTUNES.length)];
     setFortune(f);
+    await document.fonts.ready;
     ctx.fillStyle = "#000000";
-    ctx.textAlign = "center";
+    ctx.textAlign = "left";
     ctx.textBaseline = "middle";
     let fontSize = 70;
     const maxTextWidth = CANVAS_W - IMG_PAD * 2;
     do {
       ctx.font = `bold ${fontSize}px 'Prompt', Arial, sans-serif`;
     } while (ctx.measureText(f).width > maxTextWidth && --fontSize > 20);
-    ctx.fillText(f, CANVAS_W / 2, 750);
+    const tw = ctx.measureText(f).width;
+    ctx.fillText(f, (CANVAS_W - tw) / 2, 750);
 
     const dataUrl = canvas.toDataURL("image/png");
     setPreviewSrc(dataUrl);
