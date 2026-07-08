@@ -9,7 +9,11 @@ import {
   Warning,
   Sparkle,
   ArrowCounterClockwise,
+  ArrowLeft,
 } from "@phosphor-icons/react";
+import CoverScreen from "./components/CoverScreen";
+import LotteryScreen from "./components/LotteryScreen";
+import TicketViewer from "./components/TicketViewer";
 
 const PRINTER_URL = "https://printer-hackathon.synoralab.dev";
 const CANVAS_W = 696;
@@ -67,7 +71,15 @@ function applyDithering(ctx: CanvasRenderingContext2D, width: number, height: nu
 type Status = { icon: "ok" | "err" | "load" | "print" | "warn" | ""; text: string };
 type Toast = { type: "success" | "error"; text: string } | null;
 
+function getViewTicket(): string | null {
+  const hash = window.location.hash;
+  const match = hash.match(/^#view=(\d{6})$/);
+  return match ? match[1] : null;
+}
+
 export default function App() {
+  const [viewTicket, setViewTicket] = useState<string | null>(getViewTicket);
+  const [mode, setMode] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -77,6 +89,7 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [printing, setPrinting] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
+  const [cameraError, setCameraError] = useState(false);
   const [toast, setToast] = useState<Toast>(null);
 
   const showToast = useCallback((type: "success" | "error", text: string) => {
@@ -95,7 +108,7 @@ export default function App() {
       setStatus({ icon: "ok", text: "ตู้พร้อมใช้งาน" });
       return true;
     } catch {
-      setStatus({ icon: "err", text: "ไม่สามารถเข้าถึงกล้องได้ — กรุณาเปิดสิทธิ์กล้องในเบราว์เซอร์แล้วลองใหม่" });
+      setCameraError(true);
       return false;
     }
   }, []);
@@ -254,9 +267,38 @@ export default function App() {
     setStatus({ icon: "ok", text: "ตู้พร้อมใช้งาน" });
   }, []);
 
+  const goBack = useCallback(() => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    setCameraReady(false);
+    setCameraError(false);
+    setPreviewSrc(null);
+    setFortune("");
+    setBusy(false);
+    setPrinting(false);
+    setStatus({ icon: "", text: "" });
+    setToast(null);
+    setMode(null);
+  }, []);
+
+  if (viewTicket) {
+    return <TicketViewer ticketNumber={viewTicket} onClose={() => { window.location.hash = ""; setViewTicket(null); }} />;
+  }
+
+  if (!mode) {
+    return <CoverScreen onStart={(m) => setMode(m)} />;
+  }
+
+  if (mode === "lottery") {
+    return <LotteryScreen onBack={() => setMode(null)} />;
+  }
+
   return (
     <>
       <div className="container">
+        <button className="back-btn" onClick={goBack}>
+          <ArrowLeft className="icon-inline" weight="bold" /> กลับ
+        </button>
         {status.text && (
           <div className={`status ${status.icon === "ok" ? "status-ok" : status.icon === "err" ? "status-err" : status.icon === "warn" ? "status-warn" : ""}`}>
             {status.icon === "ok" && <CheckCircle className="icon-inline" weight="fill" />}
@@ -273,19 +315,33 @@ export default function App() {
           <>
             <div className="camera-wrapper">
               <video ref={videoRef} autoPlay playsInline muted className={`camera ${cameraReady ? "" : "camera-hidden"}`} />
-              {!cameraReady && (
+              {!cameraReady && !cameraError && (
                 <div className="camera-placeholder">
                   <Camera className="placeholder-icon" weight="light" />
                   <p>กดปุ่มด้านล่างเพื่อเปิดกล้อง</p>
                 </div>
               )}
+              {cameraError && (
+                <div className="camera-error">
+                  <div className="camera-error-icon">
+                    <XCircle size={40} weight="fill" />
+                  </div>
+                  <p className="camera-error-title">ไม่สามารถเข้าถึงกล้องได้</p>
+                  <p className="camera-error-desc">กรุณาเปิดสิทธิ์กล้องในเบราว์เซอร์แล้วลองใหม่</p>
+                  <button className="camera-error-btn" onClick={() => { setCameraError(false); startCamera(); }}>
+                    <ArrowCounterClockwise className="icon-inline" weight="bold" /> ลองใหม่
+                  </button>
+                </div>
+              )}
             </div>
 
-            <div className="controls">
-              <button onClick={snap} disabled={busy} className="snap-btn">
-                {cameraReady ? <><Aperture className="icon-inline" weight="bold" /> แชะ!</> : <><Camera className="icon-inline" weight="bold" /> เปิดกล้อง</>}
-              </button>
-            </div>
+            {!cameraError && (
+              <div className="controls">
+                <button onClick={snap} disabled={busy} className="snap-btn">
+                  {cameraReady ? <><Aperture className="icon-inline" weight="bold" /> แชะ!</> : <><Camera className="icon-inline" weight="bold" /> เปิดกล้อง</>}
+                </button>
+              </div>
+            )}
           </>
         )}
 
@@ -330,6 +386,29 @@ export default function App() {
           max-width: 700px;
           width: 100%;
           position: relative;
+        }
+
+        .back-btn {
+          position: absolute;
+          top: clamp(12px, 3vw, 18px);
+          left: clamp(12px, 3vw, 18px);
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          background: #f1f5f9;
+          color: #64748b;
+          border: none;
+          padding: 6px 14px;
+          font-size: clamp(0.75rem, 2vw, 0.85rem);
+          font-weight: 500;
+          font-family: inherit;
+          border-radius: 14px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .back-btn:hover {
+          background: #e2e8f0;
+          color: #475569;
         }
 
         h2 {
@@ -396,6 +475,58 @@ export default function App() {
           font-size: clamp(0.8rem, 2.5vw, 0.95rem);
           color: #aaa;
           margin: 0;
+        }
+
+        .camera-error {
+          position: absolute;
+          inset: 0;
+          border-radius: clamp(10px, 3vw, 16px);
+          background: #fef2f2;
+          border: 2px solid #fecaca;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 20px;
+        }
+        .camera-error-icon {
+          color: #f87171;
+          margin-bottom: 4px;
+        }
+        .camera-error-title {
+          font-size: clamp(0.9rem, 3vw, 1.05rem);
+          font-weight: 600;
+          color: #b91c1c;
+          margin: 0;
+        }
+        .camera-error-desc {
+          font-size: clamp(0.75rem, 2.2vw, 0.85rem);
+          color: #dc2626;
+          margin: 0;
+          opacity: 0.8;
+          text-align: center;
+          line-height: 1.5;
+        }
+        .camera-error-btn {
+          margin-top: 8px;
+          background: #fff;
+          color: #b91c1c;
+          border: 1.5px solid #fca5a5;
+          padding: 8px 20px;
+          font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+          font-weight: 500;
+          font-family: inherit;
+          border-radius: 20px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .camera-error-btn:hover {
+          background: #fef2f2;
+          border-color: #f87171;
         }
 
         .controls {
