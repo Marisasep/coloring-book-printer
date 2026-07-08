@@ -23,7 +23,7 @@ const LotteryTicket = forwardRef<HTMLDivElement, Props>(function LotteryTicket(
     barcodeSrc,
     dateTh,
     dateEn,
-    serial,
+    serial: _serial,
   },
   ref,
 ) {

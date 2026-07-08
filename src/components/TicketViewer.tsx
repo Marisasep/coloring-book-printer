@@ -52,7 +52,7 @@ export default function TicketViewer({ ticketNumber, onClose }: Props) {
           <>
             <img src={imageSrc} alt={`สลาก ${ticketNumber}`} className="tv-img" />
             <div className="tv-actions">
-              {navigator.share && (
+              {"share" in navigator && (
                 <button className="tv-share-btn" onClick={share}>แชร์</button>
               )}
               <button className="tv-dl-btn" onClick={download}>ดาวน์โหลด</button>
